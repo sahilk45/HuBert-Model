@@ -1,57 +1,155 @@
-# 🎙️ HuBERT-Based Speech Representation Learning Across Multiple Datasets
+
+# 🎙️ Speech Emotion Recognition using HuBERT, Wav2Vec2 & Bi-LSTM
+
 
 ## 📌 Project Overview
 
-This repository presents a comprehensive experimental study on **HuBERT (Hidden-Unit BERT)** for self-supervised speech representation learning across **different audio datasets**.
+This repository presents a comprehensive study on **Speech Emotion Recognition (SER)** using three different deep learning approaches:
 
-The primary objective of this project is to evaluate the robustness, generalization capability, and adaptability of HuBERT embeddings under varying dataset characteristics and augmentation strategies.
+1. **HuBERT (Large)**
+2. **Wav2Vec2 (Base) – Fine-tuned**
+3. **Bi-LSTM with Augmented Audio**
 
-This work explores:
-
-- Baseline HuBERT training
-- Data augmentation techniques
-- Cross-dataset generalization
-- Robust speech feature learning
+The goal is to compare self-supervised transformer-based models and traditional recurrent neural networks for multi-class emotion classification on augmented speech datasets.
 
 ---
 
-## 🧠 Background
 
-HuBERT (Hidden-Unit BERT) is a self-supervised speech representation learning framework that learns powerful contextualized embeddings from raw audio without requiring labeled data.
+# 🧠 1️⃣ HuBERT Large Model
 
-It works by:
-- Generating pseudo-labels (hidden units)
-- Applying masked prediction objectives
-- Learning contextual acoustic representations
+### 🔹 Model
+- Pretrained HuBERT Large
+- Transformer-based encoder
+- Self-supervised speech representation learning
+- Fine-tuned for emotion classification
 
-These learned representations are highly effective for downstream speech tasks.
+### 🔹 Key Characteristics
+- Contextual speech embeddings
+- Masked prediction objective
+- Deep transformer layers
+- Strong generalization capability
 
----
-
-## 🎯 Objectives
-
-- Train and fine-tune HuBERT on five distinct datasets
-- Evaluate robustness across different data distributions
-- Analyze impact of augmentation techniques
-- Improve generalization performance
-- Study representation stability under variations
-
+### 🔹 Use Case
+High-level acoustic feature learning for emotion recognition.
 
 ---
 
-## 🏗️ Experimental Setup
+# 🎧 2️⃣ Wav2Vec2 (Base) – Bandpass Audio Fine-Tuning
+
+### 🔹 Pretrained Model
+`facebook/wav2vec2-base`
+
+### 🔹 Training Strategy
+- Fine-tuned for **6-class emotion classification**
+- Feature extractor initially frozen
+- Unfrozen after 3 epochs
+- Early stopping (patience = 5)
+- AdamW optimizer
+- Linear warmup scheduler
+
+### 🔹 Dataset Structure
+aug_bandpass_audio/
+
+├── Anger/
+
+├── Disgust/
+
+├── Fear/
+
+├── Happy/
+
+├── Neutral/
+
+└── Sad/
+
+
+### 🔹 Configuration
+
+- Sampling Rate: 16kHz
+- Batch Size: 8
+- Learning Rate: 2e-5
+- Weight Decay: 0.01
+- Epochs: 50 (Early Stopping enabled)
+- Loss: CrossEntropyLoss
+
+### 🔹 Outputs Saved
+
+- `best_model.pth`
+- `training_curves.png`
+- `confusion_matrix.png`
+- `training_history.csv`
+- `finetuned_wav2vec2_model/` (Full pretrained model directory)
+
+---
+
+# 🔁 3️⃣ Bi-LSTM with Augmented Audio
 
 ### 🔹 Model Architecture
-- Pretrained HuBERT Large model
-- Transformer-based encoder
-- Contextual speech embedding extraction
-- Fine-tuning on dataset-specific tasks
+
+- Input: 120-D features  
+  (40 MFCC + Delta + Delta-Delta)
+- Bi-LSTM Layer 1:
+  - Hidden Size: 256
+  - Num Layers: 2
+  - Bidirectional
+- Bi-LSTM Layer 2:
+  - Hidden Size: 256
+  - Bidirectional
+- Fully Connected Layers:
+  - Dense (128)
+  - Output (6 classes)
+
+### 🔹 Dataset
+
+- Total Samples: **8100**
+- Emotions:
+  - Anger
+  - Disgust
+  - Fear
+  - Happy
+  - Sad
+  - Neutral
+
+### 🔹 Data Split
+
+- Train: 6480
+- Validation: 810
+- Test: 810
+
+### 🔹 Feature Extraction
+
+- MFCC (40 coefficients)
+- Delta
+- Delta-Delta
+- Total Feature Dimension: 120
+- Sampling Rate: 16kHz
+- Max Duration: 10 seconds
+
+### 🔹 Training Configuration
+
+- Epochs: 50
+- Batch Size: 32
+- Learning Rate: 0.001
+- Dropout: 0.3
+- Optimizer: Adam
+- Scheduler: ReduceLROnPlateau
+- Early Stopping: Yes
 
 
 
 ---
 
-## ⚙️ Technologies Used
+# 📊 Model Comparison
+
+| Model        | Type                  | Feature Learning Style | Strength |
+|-------------|----------------------|------------------------|----------|
+| HuBERT Large | Transformer (SSL)     | Self-supervised        | Deep contextual embeddings |
+| Wav2Vec2     | Transformer (SSL)     | Fine-tuned pretrained  | Strong generalization |
+| Bi-LSTM      | Recurrent Neural Net  | MFCC-based features    | Lightweight & interpretable |
+
+---
+
+# 🛠️ Technologies Used
 
 - Python
 - PyTorch
@@ -61,73 +159,74 @@ These learned representations are highly effective for downstream speech tasks.
 - NumPy
 - Pandas
 - Matplotlib
+- Seaborn
+- Scikit-learn
 
 ---
 
-## 📊 Key Insights
+# 🚀 How to Run
 
-- HuBERT embeddings remain stable across dataset variations.
-- Augmentation significantly improves generalization.
-- Time masking improves robustness to missing segments.
-- Pitch augmentation enhances speaker-invariant representation.
-- Cross-dataset training improves adaptability.
-
----
-
-## 🚀 Applications
-
-The learned speech representations can be applied to:
-
-- Automatic Speech Recognition (ASR)
-- Speaker Identification
-- Emotion Recognition
-- Speech Classification
-- Voice Biometrics
-- Audio Event Detection
-
----
-
-
-
-## 🧪 Reproducibility
-
-### 1️⃣ Clone Repository
+## 1️⃣ Install Dependencies
 
 ```bash
-git clone https://github.com/your-username/your-repository-name.git
-cd your-repository-name
+pip install torch torchaudio transformers librosa datasets soundfile scikit-learn pandas matplotlib seaborn tqdm
 ```
 
-### 2️⃣ Install Dependencies
+## 2️⃣ Update Dataset Path
+
+Update DATA_PATH in notebooks to your local dataset folder:
 
 ```bash
-pip install torch torchaudio transformers librosa numpy pandas matplotlib
+aug_bandpass_audio/
 ```
 
-### 3️⃣ Install Dependencies
+## 3️⃣ Run Notebooks
 
-Execute the notebooks in Jupyter or VS Code:
+Execute:
+
 - Hubert Large Model.ipynb
-- Hubert Pitch_audio.ipynb
-- Hubert time_mask_audio.ipynb
-Additional dataset experiment notebooks
-
----
-
-## 📚 References
-
-- HuBERT: Self-Supervised Speech Representation Learning by Masked Prediction of Hidden Units (Hsu et al., 2021)
-- SpecAugment: Data Augmentation for Speech Recognition
-- PyTorch Documentation
-- HuggingFace Transformers Library
+- wav2vec_bandpass.ipynb
+- bilstm_augmentd.ipynb
 
 
 ---
 
-## 👨‍💻 Author
+## 📌 End-to-End Pipeline Summary
 
-Sahil Kumar
+This project implements a complete end-to-end Speech Emotion Recognition pipeline:
 
-B.Tech Information Technology
+1. **Dataset Preparation**
+   - Organized into emotion-wise folders
+   - Includes augmented audio (bandpass, pitch shift, time masking)
+   - Stratified train-validation-test split
 
-Machine Learning & Deep Learning Enthusiast
+2. **Feature Extraction**
+   - HuBERT / Wav2Vec2 raw waveform embeddings
+   - MFCC + Delta + Delta-Delta features (Bi-LSTM)
+   - Sampling rate normalization (16kHz)
+
+3. **Model Training**
+   - Transformer-based fine-tuning (HuBERT, Wav2Vec2)
+   - Recurrent architecture training (Bi-LSTM)
+   - Early stopping and learning rate scheduling
+   - Gradient clipping for stability
+
+4. **Evaluation**
+   - Accuracy, Precision, Recall, F1-Score
+   - Confusion Matrix
+   - Per-emotion performance analysis
+
+5. **Inference**
+   - Single-audio prediction support
+   - Confidence score output
+   - Full model checkpoint saving for deployment
+
+---
+## 📊 Key Takeaways
+
+- Self-supervised transformer models (HuBERT, Wav2Vec2) provide strong contextual representations.
+- Fine-tuning pretrained models significantly improves performance over training from scratch.
+- MFCC-based Bi-LSTM offers a computationally lighter alternative.
+- Data augmentation improves generalization and robustness.
+
+---
